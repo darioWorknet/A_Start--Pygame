@@ -91,7 +91,7 @@ class Spot:
 def h(p1, p2):
 	x1, y1 = p1
 	x2, y2 = p2
-	return abs(x1 - x2) + abs(y1 - y2)
+	return abs(x1 - x2) + abs(y1 - y2) 
 
 
 def reconstruct_path(came_from, current, draw):
@@ -112,8 +112,10 @@ def algorithm(draw, grid, start, end):
 	f_score[start] = h(start.get_pos(), end.get_pos())
 
 	open_set_hash = {start}
-
+	iter = 0
 	while not open_set.empty():
+		iter += 1
+		print("Iteration =", iter)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()

@@ -8,27 +8,29 @@
 
 import pygame
 import time
+import math
 
 #Initialize pygame
 pygame.init()
 
 # ENVIRONMENT
-WIDTH = 500
+WIDTH = 800
 HEIGHT = WIDTH
-ROWS = 20
+ROWS = 50
 
 # PYGAME WINDOW
 WIN = pygame.display.set_mode(( WIDTH, HEIGHT))
 pygame.display.set_caption("A* from scratch")
 
 # COLORS
-LINE_COLOR = (150, 200, 50)
-NORMAL = (200,  200, 250)
+LINE_COLOR = (100, 100, 100)
+NORMAL = (250,  250, 240) 
 BARRIER = (20, 20, 20)
 START = (20,32, 108)
 END = (200, 100, 255)
-BORDER = (204, 10, 50)
-VISITED = (30, 120, 200)
+BORDER = (100,  100, 50)
+VISITED = (200,  200, 150)
+PATH = (20, 200, 10)
 
 
 class Node:
@@ -41,6 +43,8 @@ class Node:
         self.color = self.get_color()
         self.width = width
         self.rows = rows
+        self.G = 99999
+        self.H = 99999
 
     def get_color(self):
         if self.state == "Normal":
@@ -55,6 +59,8 @@ class Node:
             return BORDER
         elif self.state == "Visited":
             return VISITED
+        elif self.state == "Path":
+            return PATH
 
     def get_width(self):
         return self.width
@@ -69,7 +75,7 @@ class Node:
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
-    def get_neighbours(self, nodes):
+    def update_neighbours(self, nodes):
         self.neighbours = []
         # Get UP, DOWN, LEFT, RIGHT neighbours (Barries not allowed):
         if self.row != 0 and nodes[self.row - 1][self.col].get_state() != "Barrier": # UP
@@ -80,39 +86,96 @@ class Node:
             self.neighbours.append(nodes[self.row][self.col - 1]) 
         if self.col < self.rows - 1 and nodes[self.row][self.col + 1].get_state() != "Barrier": # RIGHT
             self.neighbours.append(nodes[self.row][self.col + 1])
-        return self.neighbours
+
+    def set_parent(self, node):
+        self.parent = node
+
+    def restart_G(self):
+        self.G = 0
+
+    def set_G(self):
+        self.G = self.parent.G + self.distance_to(self.parent)
+
+    def set_H(self, node):
+        self.H = self.distance_to(node) 
+
+    def set_F(self):
+        self.F = self.G + self.H
+
+    def distance_to(self, node):
+        x2, y2 = node.get_coords()
+        return abs(self.x - x2) + abs(self.y - y2)
+
+    def get_coords(self):
+        return self.x, self.y
 
 
 def a_star(draw, start_node, end_node, nodes):
     
-    #draw_borders(win, visited, borders)
     borders = []
     visited = []
     finished = False
+
+    start_node.set_parent(start_node)
+    start_node.restart_G()
+    start_node.set_H(end_node)
+    start_node.set_F()
     borders.append(start_node)
-    print(start_node == end_node)
-    end = 0
-    start = 0
+
+    iteration = 0
 
     while len(borders) != 0 and not finished:
+        draw()
+        iteration += 1
+        borders.sort(key = lambda x: x.F, reverse=True)
         node = borders.pop()
         visited.append(node)
         node.set_state("Visited")
+        print("Iteration:", iteration)
+        print("Node G:", node.G)
+        print("Node H:", node.H)
+        print("Node F:", node.F)
+        print("")
 
         if node == end_node:
             finished = True
             print("Solution found")
+            #draw backwards path
+            draw_path(end_node, start_node)
+
         else:
-            print("Iteration")
-            neighbours = node.get_neighbours(nodes)
-            for neighbour in neighbours:
-                if neighbour not in visited:
+            #neighbours = node.get_neighbours(nodes)
+            node.update_neighbours(nodes)
+            for neighbour in node.neighbours:
+                if neighbour not in visited and neighbour not in borders:
+                    neighbour.set_parent(node)
+                    neighbour.set_G()
+                    neighbour.set_H(end_node)
+                    neighbour.set_F()
                     neighbour.set_state("Border")
                     borders.append(neighbour)
-        time.sleep(0.2)
-        draw()
 
+        #time.sleep(0.05)
+        draw()
+    if not finished:
+        print("No solution found")
     print("Exiting A star")
+
+
+def draw_path(end_node, start_node):
+    not_found = True
+    node = end_node.parent
+    end_node.set_state("End")
+
+    while not_found:
+        if node == start_node:
+            print("found start_node")
+            not_found = False
+            node.set_state("Start")
+        else:
+            node.set_state("Path")
+            node = node.parent
+
 
 
 def make_nodes(rows, width):
@@ -214,5 +277,4 @@ def main(win, width, rows):
         draw(win, rows, width, nodes)
         
 
-        
 main (WIN, WIDTH, ROWS)
