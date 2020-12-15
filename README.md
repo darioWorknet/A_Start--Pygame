@@ -1,4 +1,4 @@
-# A START algorith
+# A START algorithm
 
 ## Controls
 * Left click  ------> create barrier
