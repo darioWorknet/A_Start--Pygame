@@ -26,11 +26,11 @@ pygame.display.set_caption("A* from scratch")
 LINE_COLOR = (100, 100, 100)
 NORMAL = (250,  250, 240) 
 BARRIER = (20, 20, 20)
-START = (20,32, 108)
-END = (200, 100, 255)
-BORDER = (100,  100, 50)
-VISITED = (200,  200, 150)
-PATH = (20, 200, 10)
+START = (250,0,0)
+END = (255,170,0)
+BORDER = (87,135,90)
+VISITED = (110,175,85)
+PATH = (186, 205, 0)
 
 
 class Node:
@@ -104,7 +104,7 @@ class Node:
 
     def distance_to(self, node):
         x2, y2 = node.get_coords()
-        return abs(self.x - x2) + abs(self.y - y2)
+        return (abs(self.x - x2) + abs(self.y - y2)) 
 
     def get_coords(self):
         return self.x, self.y
